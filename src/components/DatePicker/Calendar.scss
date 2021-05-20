@@ -1,0 +1,68 @@
+.pointer {
+    cursor: pointer;
+}
+.selected-date {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 8px;
+}
+.container {
+    border: 1px solid darkgrey;
+    border-radius: 6px;
+    padding: 8px;
+    width: 296px;
+    height: auto;
+    box-shadow: 0 2px 12px 0 RGB(0 0 0 / 10%);
+    .header {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        button {
+            background-color: white;
+            border: none;
+            cursor: pointer;
+        }
+    }
+    table {
+        width: 100%;
+        // font-family: Avenir, Helvetica, Arial, sans-serif;
+        &.date-phase td {
+            text-align: center;
+            padding: 8px;
+            height: 24px;
+            width: 24px;
+            &.date-content {
+                &.is-today {
+                    color: #db3d44;
+                }
+                &:hover {
+                    padding: 7px;
+                }
+            }
+        }
+        &.month-phase td {
+            text-align: center;
+            padding: 26px 8px;
+            &:hover {
+                padding: 25px 7px;
+            }
+        }
+        &.date-phase td.date-content,
+        &.month-phase td {
+            cursor: pointer;
+            &.is-not-current {
+                color: #eeeeee;
+            }
+            &.is-selected {
+                background-color: #db3d44;
+                border-radius: 50%;
+                color: white;
+            }
+            &:hover {
+                border: 1px solid #db3d44;
+                border-radius: 50%;
+            }
+        }
+    }
+}
