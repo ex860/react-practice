@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Calendar.scss';
 import className from 'classnames';
 import classNames from 'classnames';
@@ -105,70 +105,58 @@ const YearTable = (props) => {
         </table>
     );
 };
+const Calendar = (props) => {
+    const [currentPhase, setCurrentPhase] = useState('date');
+    const [currentYear, setCurrentYear] = useState(props.selectedDay.year);
+    const [currentMonth, setCurrentMonth] = useState(props.selectedDay.month);
+    const [years, setYears] = useState([]);
 
-export default class Calendar extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            currentPhase: 'date',
-            currentYear: props.selectedDay.year,
-            currentMonth: props.selectedDay.month,
-            years: [],
-        };
-    }
-
-    onArrowClick = (dir) => {
-        switch (this.state.currentPhase) {
+    const onArrowClick = (dir) => {
+        switch (currentPhase) {
             default:
             case 'date':
                 if (dir === 'next') {
-                    if (this.state.currentMonth !== 12) {
-                        this.setState({ currentMonth: this.state.currentMonth + 1 });
+                    if (currentMonth !== 12) {
+                        setCurrentMonth((prev) => prev + 1);
                     } else {
-                        this.setState({
-                            currentMonth: 1,
-                            currentYear: this.state.currentYear + 1,
-                        });
+                        setCurrentMonth(1);
+                        setCurrentYear((prev) => prev + 1);
                     }
                 } else {
-                    if (this.state.currentMonth !== 1) {
-                        this.setState({ currentMonth: this.state.currentMonth - 1 });
+                    if (currentMonth !== 1) {
+                        setCurrentMonth((prev) => prev - 1);
                     } else {
-                        this.setState({
-                            currentMonth: 12,
-                            currentYear: this.state.currentYear - 1,
-                        });
+                        setCurrentMonth(12);
+                        setCurrentYear((prev) => prev - 1);
                     }
                 }
                 break;
             case 'month':
-                this.setState({ currentYear: this.state.currentYear + (dir === 'next' ? 1 : -1) });
+                setCurrentYear((prev) => prev + (dir === 'next' ? 1 : -1));
                 break;
             case 'year':
-                const nextYear = this.state.currentYear + (dir === 'next' ? 10 : -10);
-                this.setState({ currentYear: nextYear });
-                this.genYears(nextYear);
+                const nextYear = currentYear + (dir === 'next' ? 10 : -10);
+                setCurrentYear(nextYear);
+                genYears(nextYear);
                 break;
         }
     };
-    toYearPhase = () => {
-        this.setState({ currentPhase: 'year' });
-        this.genYears(this.state.currentYear);
+    const toYearPhase = () => {
+        setCurrentPhase('year');
+        genYears(currentYear);
     };
-    genYears = (year) => {
+    const genYears = (year) => {
         let array1d = Array.from(Array(12).keys()).map((n) => n + year - (year % 10) - 1);
-        this.setState({
-            years: [array1d.slice(0, 4), array1d.slice(4, 8), array1d.slice(8, 12)],
-        });
+        setYears([array1d.slice(0, 4), array1d.slice(4, 8), array1d.slice(8, 12)]);
     };
-    handleDateClick = (obj) => {
-        let year = this.state.currentYear;
-        let month = this.state.currentMonth;
+    const handleDateClick = (obj) => {
+        let year = currentYear;
+        let month = currentMonth;
         let date = obj.date;
         if (!obj.isCurrent) {
             // to prev month
             if (obj.date > 20) {
-                this.onArrowClick('prev');
+                onArrowClick('prev');
                 if (month !== 1) {
                     month--;
                 } else {
@@ -177,7 +165,7 @@ export default class Calendar extends React.Component {
                 }
                 // to next month
             } else {
-                this.onArrowClick('next');
+                onArrowClick('next');
                 if (month !== 12) {
                     month++;
                 } else {
@@ -186,88 +174,76 @@ export default class Calendar extends React.Component {
                 }
             }
         }
-        this.props.updateSelectedDay({ year, month, date });
+        props.updateSelectedDay({ year, month, date });
     };
-    handleMonthClick = (month) => {
-        this.setState({
-            currentMonth: month,
-            currentPhase: 'date',
-        });
+    const handleMonthClick = (month) => {
+        setCurrentMonth(month);
+        setCurrentPhase('date');
     };
-    handleYearClick = (year) => {
-        this.setState({
-            currentYear: year,
-            currentPhase: 'month',
-        });
+    const handleYearClick = (year) => {
+        setCurrentYear(year);
+        setCurrentPhase('month');
     };
-    renderHeaderTitle = () => {
-        switch (this.state.currentPhase) {
+    const renderHeaderTitle = () => {
+        switch (currentPhase) {
             default:
             case 'date':
                 return (
-                    <strong className="pointer" onClick={() => this.setState({ currentPhase: 'month' })}>
-                        {`${mapMonthString(this.state.currentMonth)} ${this.state.currentYear}`}
+                    <strong className="pointer" onClick={() => setCurrentPhase('month')}>
+                        {`${mapMonthString(currentMonth)} ${currentYear}`}
                     </strong>
                 );
             case 'month':
                 return (
-                    <strong className="pointer" onClick={this.toYearPhase}>
-                        {this.state.currentYear}
+                    <strong className="pointer" onClick={toYearPhase}>
+                        {currentYear}
                     </strong>
                 );
             case 'year':
-                if (this.state.years.length >= 3) {
-                    return <strong>{`${this.state.years[0][1]} - ${this.state.years[2][2]}`}</strong>;
+                if (years.length >= 3) {
+                    return <strong>{`${years[0][1]} - ${years[2][2]}`}</strong>;
                 }
                 return null;
         }
     };
-    renderTable = () => {
-        switch (this.state.currentPhase) {
+    const renderTable = () => {
+        switch (currentPhase) {
             default:
             case 'date':
                 return (
                     <DateTable
-                        currentYear={this.state.currentYear}
-                        currentMonth={this.state.currentMonth}
-                        handleClick={this.handleDateClick}
-                        today={this.props.today}
-                        selectedDay={this.props.selectedDay}
+                        currentYear={currentYear}
+                        currentMonth={currentMonth}
+                        handleClick={handleDateClick}
+                        today={props.today}
+                        selectedDay={props.selectedDay}
                     />
                 );
             case 'month':
                 return (
                     <MonthTable
-                        currentYear={this.state.currentYear}
-                        selectedDay={this.props.selectedDay}
-                        handleClick={this.handleMonthClick}
+                        currentYear={currentYear}
+                        selectedDay={props.selectedDay}
+                        handleClick={handleMonthClick}
                     />
                 );
             case 'year':
-                return (
-                    <YearTable
-                        handleClick={this.handleYearClick}
-                        selectedDay={this.props.selectedDay}
-                        years={this.state.years}
-                    />
-                );
+                return <YearTable handleClick={handleYearClick} selectedDay={props.selectedDay} years={years} />;
         }
     };
-    render() {
-        return (
-            <div>
-                <div className="container">
-                    <div className="header">
-                        <button onClick={() => this.onArrowClick('prev')}>&lt;</button>
-                        <span>{this.renderHeaderTitle()}</span>
-                        <button onClick={() => this.onArrowClick('next')}>&gt;</button>
-                    </div>
-                    {this.renderTable()}
+    return (
+        <div>
+            <div className="container">
+                <div className="header">
+                    <button onClick={() => onArrowClick('prev')}>&lt;</button>
+                    <span>{renderHeaderTitle()}</span>
+                    <button onClick={() => onArrowClick('next')}>&gt;</button>
                 </div>
+                {renderTable()}
             </div>
-        );
-    }
-}
+        </div>
+    );
+};
 const mapMonthString = (month) => {
     return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month - 1];
 };
@@ -340,3 +316,4 @@ const weeks = (year, month) => {
     }
     return curMonthWeeks;
 };
+export default Calendar;
